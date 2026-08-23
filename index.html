@@ -37,147 +37,234 @@
     .loading-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      gap: 22px;
+      align-items: center;
+      text-align: center;
+      gap: 18px;
     }
 
-    .logo {
-      font-size: 22px;
+    /* 照拿藥圖示 */
+    .medicine-icon {
+      width: 150px;
+      max-width: 42vw;
+      height: auto;
+
+      animation:
+        floatIcon 1.8s ease-in-out infinite;
+
+      filter:
+        drop-shadow(
+          0 10px 15px rgba(0, 0, 0, 0.08)
+        );
+    }
+
+    /* 上下浮動 */
+    @keyframes floatIcon {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-12px);
+      }
+
+    }
+
+    .title {
+      font-size: 20px;
       font-weight: 600;
       color: #35694b;
       letter-spacing: 2px;
     }
 
-    .loader {
-      width: 52px;
-      height: 52px;
-      border: 5px solid #e3eee6;
-      border-top: 5px solid #4f8a63;
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-    }
-
     .subtitle {
-      font-size: 15px;
+      font-size: 14px;
       color: #888;
       letter-spacing: 1px;
     }
 
-    .dots::after {
-      content: "";
-      animation: dots 1.5s steps(4, end) infinite;
+    /* 三點波浪 */
+    .wave-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      height: 25px;
     }
 
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
+    .wave-dots span {
+      width: 9px;
+      height: 9px;
+      background: #4f8a63;
+      border-radius: 50%;
 
-      100% {
-        transform: rotate(360deg);
-      }
+      animation:
+        waveDot 1.2s ease-in-out infinite;
     }
 
-    @keyframes dots {
-      0% {
-        content: "";
-      }
+    .wave-dots span:nth-child(1) {
+      animation-delay: 0s;
+    }
 
-      25% {
-        content: ".";
-      }
+    .wave-dots span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
 
-      50% {
-        content: "..";
-      }
+    .wave-dots span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
 
-      75% {
-        content: "...";
-      }
+    @keyframes waveDot {
 
+      0%,
+      60%,
       100% {
-        content: "";
+        transform: translateY(0);
+        opacity: 0.45;
       }
+
+      30% {
+        transform: translateY(-9px);
+        opacity: 1;
+      }
+
     }
 
     .error-message {
       display: none;
-      max-width: 300px;
-      text-align: center;
-      line-height: 1.7;
-      color: #666;
-      font-size: 15px;
+      margin-top: 6px;
+      max-width: 280px;
+      font-size: 14px;
+      color: #777;
+      line-height: 1.6;
     }
+
   </style>
 </head>
 
 <body>
 
-  <div class="loading-container" id="loading">
+  <div class="loading-container">
 
-    <div class="logo">
-      瑞恩中醫
+    <!--
+      圖片放在：
+      /images/medicine-form.png
+    -->
+    <img
+      class="medicine-icon"
+      src="./images/medicine-form.png"
+      alt="照拿藥表單"
+    >
+
+    <div class="title">
+      照拿藥表單
     </div>
-
-    <div class="loader"></div>
 
     <div class="subtitle">
-      照拿藥表單載入中<span class="dots"></span>
+      正在確認您的 LINE 身分
     </div>
 
-    <div class="error-message" id="errorMessage">
+    <!-- 三點波浪 -->
+    <div class="wave-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <div
+      class="error-message"
+      id="errorMessage"
+    >
       系統連線稍有延遲，正在為您開啟表單。
     </div>
 
   </div>
 
+
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
 
-      try {
+    document.addEventListener(
+      "DOMContentLoaded",
+      async () => {
 
-        console.log("LIFF 初始化");
+        try {
 
-        await liff.init({
-          liffId: "2011216294-Ug0co1AC"
-        });
+          console.log(
+            "LIFF 初始化"
+          );
 
-        if (!liff.isLoggedIn()) {
 
-          console.log("尚未登入 LINE");
+          // ==============================
+          // LIFF 初始化
+          // ==============================
 
-          liff.login();
+          await liff.init({
 
-          return;
+            liffId:
+              "2011216294-Ug0co1AC"
+
+          });
+
+
+          // ==============================
+          // 尚未登入 LINE
+          // ==============================
+
+          if (
+            !liff.isLoggedIn()
+          ) {
+
+            console.log(
+              "尚未登入 LINE"
+            );
+
+            liff.login();
+
+            return;
+          }
+
+
+          console.log(
+            "LINE 已登入"
+          );
+
+
+          await sendUserDataAndRedirect();
+
+
+        } catch (err) {
+
+          console.error(
+            "LIFF 初始化失敗:",
+            err
+          );
+
+
+          showError();
+
+
+          setTimeout(() => {
+
+            redirectToGoogleForm();
+
+          }, 1500);
+
         }
 
-        console.log("LINE 已登入");
-
-        await sendUserDataAndRedirect();
-
-      } catch (err) {
-
-        console.error(
-          "LIFF 初始化失敗:",
-          err
-        );
-
-        showError();
-
-        setTimeout(() => {
-          redirectToGoogleForm();
-        }, 1500);
-
       }
-
-    });
+    );
 
 
 
     async function sendUserDataAndRedirect() {
 
       try {
+
+        // ==============================
+        // 取得 LINE Profile
+        // ==============================
 
         const profile =
           await liff.getProfile();
@@ -188,14 +275,16 @@
           profile.displayName
         );
 
+
         console.log(
           "LINE User ID:",
           profile.userId
         );
 
 
+
         // ==============================
-        // 儲存 LINE 資料
+        // 暫存 localStorage
         // ==============================
 
         localStorage.setItem(
@@ -203,10 +292,12 @@
           profile.displayName
         );
 
+
         localStorage.setItem(
           "userId",
           profile.userId
         );
+
 
 
         // ==============================
@@ -236,6 +327,7 @@
         );
 
 
+
         // ==============================
         // Google Form
         // ==============================
@@ -253,14 +345,21 @@
           `&${entryName}=${encodeURIComponent(profile.displayName)}`;
 
 
+
         console.log(
           "前往照拿藥表單"
         );
 
 
-        window.location.replace(
-          finalFormURL
-        );
+        // 稍微停留一下，
+        // 讓 Loading 動畫不會瞬間消失
+        setTimeout(() => {
+
+          window.location.replace(
+            finalFormURL
+          );
+
+        }, 600);
 
 
       } catch (err) {
@@ -270,10 +369,14 @@
           err
         );
 
+
         showError();
 
+
         setTimeout(() => {
+
           redirectToGoogleForm();
+
         }, 1500);
 
       }
@@ -285,10 +388,16 @@
     function showError() {
 
       const errorMessage =
-        document.getElementById("errorMessage");
+        document.getElementById(
+          "errorMessage"
+        );
+
 
       if (errorMessage) {
-        errorMessage.style.display = "block";
+
+        errorMessage.style.display =
+          "block";
+
       }
 
     }
